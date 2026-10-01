@@ -12,6 +12,7 @@ import { Rail } from "./src/rail";
 import { ControlRoom } from "./src/control-room";
 import { NavChart } from "./src/chart";
 import { UsageDock } from "./src/usage-dock";
+import { toggleMode } from "./src/mode-toggle";
 
 export default definePluginApp((app) => {
   app.slots.experimental_threadList({
@@ -23,4 +24,11 @@ export default definePluginApp((app) => {
   app.slots.homepageSection({ id: "control-room", title: "Control room", component: ControlRoom });
   app.slots.messageDirective({ id: "nav-chart", component: NavChart });
   app.slots.experimental_appOverlay({ id: "usage-dock", component: UsageDock });
+  app.experimental_sidebarFooter.register({
+    kind: "action",
+    id: "light-dark",
+    label: "Switch light / dark mode",
+    icon: "navaigate-skin/contrast",
+    onActivate: () => toggleMode(),
+  });
 });

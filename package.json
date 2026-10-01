@@ -1,6 +1,6 @@
 {
   "name": "bb-plugin-navaigate-skin",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "type": "module",
   "engines": {
     "bb": ">=0.44",
@@ -10,7 +10,10 @@
     "name": "NavAIgate Skin",
     "description": "The NavAIgate platform look for bb: warm paper and ink, a run-sheet rail grouped by project with every harness marked, a Control room on the homepage, and ::nav-chart blocks so replies can carry real charts.",
     "branding": {
-      "icon": "Compass"
+      "icon": "Compass",
+      "experimental_icons": {
+        "contrast": "./icons/contrast.svg"
+      }
     },
     "server": "./server.ts",
     "app": "./app.tsx",
@@ -80,6 +83,7 @@
     "PLUGIN_OVERVIEW.md",
     "README.md",
     "tsconfig.json",
-    "components.json"
+    "components.json",
+    "icons"
   ]
 }
