@@ -198,16 +198,20 @@ function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null
         (left !== null ? `<span class="hidden text-muted-foreground/80 xl:inline">· ${k(left)} to compact</span>` : "") +
         `</span>`,
     );
+  } else if (ctx && ctx.used !== null) {
+    parts.push(
+      `<span class="flex items-center gap-2" title="${esc(`Context: about ${ctx.used.toLocaleString("en-GB")} tokens in use; bb has not reported this model's window size yet.`)}">${cap("Context")}${comet(0, null)}<span class="text-foreground">${k(ctx.used)}</span><span>in use</span></span>`,
+    );
   } else {
     parts.push(`<span class="flex items-center gap-2">${cap("Context")}${comet(0, null)}<span>waiting for the first turn</span></span>`);
   }
   if (wins && wins.length > 0) {
     parts.push(`<span aria-hidden class="h-3 w-px bg-border"></span>`);
     if (plan && (plan.label || plan.email)) {
-      const who = plan.email ? plan.email.split("@")[0] : "";
+      const who = plan.email ?? "";
       const how = plan.source === "pinned" ? "this chat is pinned to" : plan.source === "pool" ? "the pool's current account" : "local login";
       parts.push(
-        `<span class="flex items-center gap-1.5" title="${esc(`${harness}: ${plan.label ?? "plan"}${plan.email ? ` · ${plan.email}` : ""} (${how})`)}">${cap(plan.label ?? harness)}${who ? `<span class="text-muted-foreground/80">${esc(who)}</span>` : ""}</span>`,
+        `<span class="flex min-w-0 items-center gap-1.5" title="${esc(`${harness}: ${plan.label ?? "plan"}${plan.email ? ` · ${plan.email}` : ""} (${how})`)}">${cap((plan.label ?? harness).replace(/\s*\((\d+x)\)/i, " $1"))}${who ? `<span class="truncate text-muted-foreground/80">${esc(who)}</span>` : ""}</span>`,
       );
     }
     // Session always, then whichever other window is fullest; the rest live in the tooltip.
@@ -246,6 +250,16 @@ export function UsageDock() {
   const providerId = thread?.providerId ?? null;
   const running = thread ? thread.status === "active" || thread.status === "starting" : false;
   const [ctx, setCtx] = useState<Ctx>(null);
+  // Remembered across reloads, so one bad estimate cannot shrink the window.
+  const bestWindow = useRef<Map<string, number>>(
+    (() => {
+      try {
+        return new Map(Object.entries(JSON.parse(window.localStorage.getItem("nav-skin:ctxwin") ?? "{}") as Record<string, number>));
+      } catch {
+        return new Map<string, number>();
+      }
+    })(),
+  );
   const [wins, setWins] = useState<Win[] | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const sessionId = ctx?.sessionId ?? null;
@@ -268,11 +282,25 @@ export function UsageDock() {
         };
       };
       const u = r.usage;
+      // bb sometimes falls back to an estimate with a default 200k window even
+      // on 1M-context models. Keep the largest real window seen for this chat,
+      // and never trust a window smaller than what is already in use.
+      const reported = Math.max(u?.snapshot?.contextWindowTokens ?? 0, u?.modelContextWindow ?? 0);
+      const known = Math.max(reported, bestWindow.current.get(threadId) ?? 0);
+      if (known > 0 && known !== bestWindow.current.get(threadId)) {
+        bestWindow.current.set(threadId, known);
+        try {
+          window.localStorage.setItem("nav-skin:ctxwin", JSON.stringify(Object.fromEntries([...bestWindow.current].slice(-200))));
+        } catch {
+          /* storage blocked: memory only */
+        }
+      }
+      const used = u ? (u.usedTokens ?? u.snapshot?.usedTokens ?? null) : null;
       setCtx(
         u
           ? {
-              used: u.usedTokens ?? u.snapshot?.usedTokens ?? null,
-              window: u.modelContextWindow ?? u.snapshot?.contextWindowTokens ?? null,
+              used,
+              window: known > 0 && (used === null || used <= known) ? known : null,
               compactAt: u.snapshot?.autoCompactAtTokens ?? null,
               estimated: !!u.estimated,
               sessionId: u.snapshot?.providerSessionId ?? null,
