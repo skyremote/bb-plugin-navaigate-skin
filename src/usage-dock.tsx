@@ -211,7 +211,7 @@ function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null
       const who = plan.email ?? "";
       const how = plan.source === "pinned" ? "this chat is pinned to" : plan.source === "pool" ? "the pool's current account" : "local login";
       parts.push(
-        `<span class="flex min-w-0 items-center gap-1.5" title="${esc(`${harness}: ${plan.label ?? "plan"}${plan.email ? ` · ${plan.email}` : ""} (${how})`)}">${cap((plan.label ?? harness).replace(/\s*\((\d+x)\)/i, " $1"))}${who ? `<span class="truncate text-muted-foreground/80">${esc(who)}</span>` : ""}</span>`,
+        `<span class="flex min-w-0 items-center gap-1.5" title="${esc(`${planName(harness, plan.label)}${plan.email ? ` · ${plan.email}` : ""} (${how}). Usage is live from the provider; the plan tier is what bb recorded when this account was signed in, so re-sign-in after changing plan.`)}">${cap(planName(harness, plan.label))}${who ? `<span class="truncate text-muted-foreground/80">${esc(who)}</span>` : ""}</span>`,
       );
     }
     // Session always, then whichever other window is fullest; the rest live in the tooltip.
@@ -227,6 +227,15 @@ function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null
     }
   }
   return `<div class="flex h-7 min-w-0 items-center gap-4 overflow-hidden whitespace-nowrap px-1.5 pt-1 text-[11.5px] text-muted-foreground" style="font-variant-numeric:tabular-nums">${parts.join("")}</div>`;
+}
+
+/** "Claude Max", "ChatGPT Pro"… The provider is named so a Codex plan is never
+ *  mistaken for a Claude one, and the 5x/20x multiplier is dropped because bb
+ *  only records it at sign-in and it goes stale after a plan change. */
+function planName(harness: string, label: string | null): string {
+  const provider = harness === "Codex" ? "ChatGPT" : harness === "Claude" ? "Claude" : harness;
+  const base = (label ?? "").replace(/\s*\(?\d+\s*x\)?/gi, "").trim();
+  return base ? `${provider} ${base}` : provider;
 }
 
 function shortLabel(w: { label: string; kind?: string; model?: string | null }): string {
