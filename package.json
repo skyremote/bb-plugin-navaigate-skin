@@ -1,18 +1,20 @@
 {
   "name": "bb-plugin-navaigate-skin",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "type": "module",
   "engines": {
     "bb": ">=0.44",
     "bbPluginSdk": ">=0.5.29"
   },
   "bb": {
-    "name": "NavAIgate Skin",
-    "description": "The NavAIgate platform look for bb: warm paper and ink, a run-sheet rail grouped by project with every harness marked, a Control room on the homepage, and ::nav-chart blocks so replies can carry real charts.",
+    "name": "NavAIgate Workspace",
+    "description": "NavAIgate Workspace for bb: run-sheet sidebar with tags, later flags, folders and multi-select; a to-do list linked to chats and folders with a self-moving Board; Control room; usage dock; charts in replies; the NavAIgate theme.",
     "branding": {
-      "icon": "Compass",
+      "icon": "./icons/workspace.svg",
       "experimental_icons": {
-        "contrast": "./icons/contrast.svg"
+        "contrast": "./icons/contrast.svg",
+        "board": "./icons/board.svg",
+        "todo": "./icons/todo.svg"
       }
     },
     "server": "./server.ts",
@@ -64,7 +66,7 @@
     "tailwind-merge": "^3.4.0",
     "vaul": "^1.1.2"
   },
-  "description": "NavAIgate skin for bb: run-sheet sidebar with tags, later flags, folders and multi-select; Control room; usage dock; charts in replies; NavAIgate theme.",
+  "description": "NavAIgate Workspace for bb: run-sheet sidebar with tags, later flags, folders and multi-select; a to-do list linked to chats and folders with a self-moving Board; Control room; usage dock; charts in replies; the NavAIgate theme.",
   "repository": {
     "type": "git",
     "url": "https://github.com/skyremote/bb-plugin-navaigate-skin.git"
@@ -84,6 +86,7 @@
     "README.md",
     "tsconfig.json",
     "components.json",
-    "icons"
+    "icons",
+    "server-todo.ts"
   ]
 }

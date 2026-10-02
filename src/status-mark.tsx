@@ -58,3 +58,44 @@ export function StatusMark({ reason, size = 14 }: { reason: LaterReason; size?: 
     </svg>
   );
 }
+
+/* ---- Task glyphs: the same family of marks for to-do items ----
+ *  todo     dashed ring (waiting)          doing  lattice (handled by caller)
+ *  check    gold ring with a soft ping     done   green tick, drawn once
+ *  dropped  muted cross                                                     */
+export type TaskGlyphKind = "todo" | "check" | "done" | "dropped";
+
+export function TaskGlyph({ kind, size = 14 }: { kind: TaskGlyphKind; size?: number }) {
+  ensureStyle();
+  const C = 2 * Math.PI * 9;
+  if (kind === "todo") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" aria-label="To do" role="img" className="shrink-0">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="var(--muted-foreground)" strokeOpacity=".7" strokeWidth="2" strokeLinecap="round" strokeDasharray={`${(C / 8) * 0.42} ${(C / 8) * 0.58}`} />
+      </svg>
+    );
+  }
+  if (kind === "check") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" aria-label="Ready to check" role="img" className="shrink-0 overflow-visible">
+        <circle className="nav-sm-halo" cx="12" cy="12" r="9" fill="none" stroke="var(--attention)" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="9" fill="var(--attention)" fillOpacity=".15" stroke="var(--attention)" strokeWidth="2.2" />
+        <circle cx="12" cy="12" r="3" fill="var(--attention)" />
+      </svg>
+    );
+  }
+  if (kind === "done") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" aria-label="Done" role="img" className="shrink-0">
+        <circle cx="12" cy="12" r="9" fill="var(--success)" fillOpacity=".12" stroke="var(--success)" strokeWidth="2.2" />
+        <path d="M7.5 12.25 10.5 15.25 16.75 8.75" fill="none" stroke="var(--success)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="nav-sm-draw" style={{ ["--len" as string]: "16" }} />
+      </svg>
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-label="Dropped" role="img" className="shrink-0">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="var(--muted-foreground)" strokeOpacity=".5" strokeWidth="2" />
+      <path d="M8.75 8.75 15.25 15.25M15.25 8.75 8.75 15.25" fill="none" stroke="var(--muted-foreground)" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}

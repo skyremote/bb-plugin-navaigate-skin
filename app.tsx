@@ -13,6 +13,7 @@ import { ControlRoom } from "./src/control-room";
 import { NavChart } from "./src/chart";
 import { UsageDock } from "./src/usage-dock";
 import { toggleMode } from "./src/mode-toggle";
+import { TodoBoard, TodoHeaderButton, TodoPanel } from "./src/todo";
 
 export default definePluginApp((app) => {
   app.slots.experimental_threadList({
@@ -24,6 +25,26 @@ export default definePluginApp((app) => {
   app.slots.homepageSection({ id: "control-room", title: "Control room", component: ControlRoom });
   app.slots.messageDirective({ id: "nav-chart", component: NavChart });
   app.slots.experimental_appOverlay({ id: "usage-dock", component: UsageDock });
+  // To-do: right-hand panel in any chat, a Board page, a header button and ⌘⇧D.
+  app.slots.threadPanelAction({
+    id: "todo",
+    title: "To-do",
+    icon: "navaigate-skin/todo",
+    layout: "flush",
+    component: ({ threadId }) => <TodoPanel threadId={threadId} />,
+  });
+  app.slots.experimental_threadHeaderAction({ id: "todo-button", title: "To-do", component: ({ threadId }) => <TodoHeaderButton threadId={threadId} /> });
+  app.slots.navPanel({ id: "board", title: "Board", icon: "navaigate-skin/board", path: "board", component: () => <TodoBoard /> });
+  app.commands.register({
+    id: "open-todo",
+    title: "Workspace: open to-do",
+    defaultShortcut: { key: "d", mod: true, shift: true },
+    run: (ctx) => {
+      if (ctx.threadId && ctx.openPanel({ actionId: "todo", title: "To-do" })) return;
+      window.history.pushState({}, "", "/plugins/navaigate-skin/board");
+      window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+    },
+  });
   app.experimental_sidebarFooter.register({
     kind: "action",
     id: "light-dark",

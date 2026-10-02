@@ -23,6 +23,7 @@ import { TAG_CSS, useRailState, type LaterReason, type RailOps, type Tag } from 
 import { LATER_LABEL, StatusMark } from "./status-mark";
 import { TagFilter, TagSwatches } from "./tags";
 import { BulkBar } from "./bulk-bar";
+import { TodoBadge, useFolderTodoCounts } from "./todo";
 
 const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"];
 const FOLD = 8;
@@ -342,6 +343,7 @@ export function Rail({ activeThreadId, activeProjectId, onNavigate }: PluginThre
   const [picker, setPicker] = useState<string | null>(null);
   const folders = useFolders(threads.length);
   const ops = useRailState();
+  const todoCounts = useFolderTodoCounts();
   const [tagFilter, setTagFilter] = usePersisted<string | null>("nav-skin:tag", null);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -505,6 +507,7 @@ export function Rail({ activeThreadId, activeProjectId, onNavigate }: PluginThre
           open={isOpen}
           count={node.total}
           live={node.live}
+          todos={todoCounts.get(f.id) ?? 0}
           onToggle={() => toggle(f.id)}
           onDrop={onDropInto(f.projectId, f.id)}
           onNewChat={f.kind === "group" ? null : () => { goTo(newChatInFolderUrl(f.projectId, f.id)); onNavigate(); }}
@@ -817,12 +820,13 @@ function DirectoryItems({ list, taken, onPick }: { list: Directory[] | "loading"
   );
 }
 
-function FolderRow({ folder, depth, open, count, live, onToggle, onDrop, onNewChat, menu }: {
+function FolderRow({ folder, depth, open, count, live, todos, onToggle, onDrop, onNewChat, menu }: {
   folder: Folder;
   depth: number;
   open: boolean;
   count: number;
   live: boolean;
+  todos: number;
   onToggle: () => void;
   onDrop: (e: DragEvent<HTMLElement>) => void;
   onNewChat: (() => void) | null;
@@ -856,6 +860,7 @@ function FolderRow({ folder, depth, open, count, live, onToggle, onDrop, onNewCh
       <Icon name={open ? "FolderOpen" : "Folder"} className="size-4 shrink-0 opacity-75" />
       <span className="min-w-0 flex-1 truncate">{folder.name}</span>
       {live ? <Lattice cell={2} gap={1} label="Something in here is working" /> : null}
+      <TodoBadge n={todos} />
       <span className="flex items-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
         {onNewChat ? <IconButton icon="MessageCirclePlus" label={`New chat in ${folder.name}`} onClick={onNewChat} /> : null}
       </span>

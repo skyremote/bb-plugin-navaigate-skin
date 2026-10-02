@@ -13,6 +13,7 @@ import { randomUUID } from "node:crypto";
 import Database from "better-sqlite3";
 import { defineRpcContract, type BbPluginApi } from "@get-bb/plugin-sdk";
 import { z } from "zod";
+import { createTodoEngine, todoItemSchema, TODO_STATUSES } from "./server-todo";
 
 // ---- Rail state: tags, "come back later" marks, section order (synced via bb) ----
 
@@ -40,6 +41,26 @@ export const rpcContract = defineRpcContract({
   order_set: { input: z.object({ order: z.array(z.string().max(80)).max(200) }), output: stateSchema },
   collapsed_set: { input: z.object({ id: z.string().max(80), collapsed: z.boolean() }), output: stateSchema },
   forget_threads: { input: z.object({ threadIds: ids }), output: stateSchema },
+  todo_list: { input: z.null(), output: z.object({ items: z.array(todoItemSchema), available: z.boolean() }) },
+  todo_add: {
+    input: z.object({
+      titles: z.array(z.string().trim().min(1).max(300)).min(1).max(50),
+      bbProjectId: z.string().min(1),
+      bbProjectName: z.string().min(1).max(80),
+      folderId: z.string().nullable(),
+      threadId: z.string().nullable(),
+    }),
+    output: z.object({ keys: z.array(z.string()) }),
+  },
+  todo_status: { input: z.object({ taskId: z.string(), status: z.enum(TODO_STATUSES) }), output: z.object({ ok: z.boolean() }) },
+  todo_move: {
+    input: z.object({ taskId: z.string(), status: z.enum(TODO_STATUSES), beforeTaskId: z.string().nullable(), afterTaskId: z.string().nullable() }),
+    output: z.object({ ok: z.boolean() }),
+  },
+  todo_rename: { input: z.object({ taskId: z.string(), title: z.string().trim().min(1).max(300) }), output: z.object({ ok: z.boolean() }) },
+  todo_delete: { input: z.object({ taskId: z.string() }), output: z.object({ ok: z.boolean() }) },
+  todo_link_thread: { input: z.object({ taskId: z.string(), threadId: z.string(), on: z.boolean() }), output: z.object({ ok: z.boolean() }) },
+  todo_link_folder: { input: z.object({ taskId: z.string(), folderId: z.string().nullable() }), output: z.object({ ok: z.boolean() }) },
   pool_account: {
     input: z.object({ provider: z.enum(["claude", "codex"]), sessionId: z.string().max(200).nullable() }),
     output: z.object({ accountId: z.string().nullable(), activeAccountId: z.string().nullable() }),
@@ -92,7 +113,72 @@ export default async function plugin(bb: BbPluginApi) {
     return next;
   };
 
+  const todo = createTodoEngine(bb);
+  const ok = { ok: true };
+
+  // Real-signal pass every 20s: chats starting or finishing move their tasks.
+  bb.background.service("todo-sync", {
+    async start(signal) {
+      while (!signal.aborted) {
+        await todo.sync().catch((e) => bb.log.warn(`todo sync: ${String(e)}`));
+        await new Promise((r) => {
+          const t = setTimeout(r, 20_000);
+          signal.addEventListener("abort", () => { clearTimeout(t); r(null); }, { once: true });
+        });
+      }
+    },
+  });
+
+  // "We've got this, this and this to do" -> tasks linked to the chat it was said in.
+  bb.agents.registerTool({
+    name: "workspace_todo",
+    description:
+      "Manage Daniel's to-do list in NavAIgate Workspace (stored in bb Tasks). action=add with items[] records each as a task linked to this chat; action=list shows open items for this chat; action=done marks keys (e.g. NAV-4) done.",
+    instructions:
+      "When Daniel lists things that need doing (\"we've got X, Y and Z to do\", \"add that to the list\", \"remind me to…\"), call workspace_todo with action=add and one short imperative item per thing. Do not mark items done unless he says so. Mention the keys you created.",
+    presentation: { label: { pending: "Updating the to-do list", completed: "Updated the to-do list" } },
+    parameters: z.object({
+      action: z.enum(["add", "list", "done"]),
+      items: z.array(z.string().trim().min(1).max(300)).max(30).optional(),
+      keys: z.array(z.string()).max(30).optional(),
+    }),
+    async execute({ action, items, keys }, { threadId, projectId }) {
+      if (action === "add") {
+        if (!items?.length) return "Nothing to add: pass items[].";
+        if (!projectId) return "This chat has no project, so there is nowhere to file the to-do items.";
+        const proj = await bb.sdk.projects.get({ projectId }).catch(() => null);
+        const name = (proj as { name?: string } | null)?.name ?? "Personal";
+        const created = await todo.add({ titles: items, bbProjectId: projectId, bbProjectName: name, folderId: null, threadId: threadId ?? null });
+        return `Added ${created.length} to-do item${created.length === 1 ? "" : "s"}, linked to this chat: ${created.join(", ")}. Daniel sees them in the To-do panel (⌘⇧D) and on the Board.`;
+      }
+      const all = await todo.list();
+      if (action === "done") {
+        const wanted = new Set((keys ?? []).map((k) => k.toUpperCase()));
+        const hit = all.filter((t) => wanted.has(t.key.toUpperCase()));
+        for (const t of hit) await todo.setStatus(t.id, "done", "Agent");
+        return hit.length ? `Marked done: ${hit.map((t) => t.key).join(", ")}.` : "No matching keys.";
+      }
+      const mine = all.filter((t) => t.threads.some((x) => x.threadId === threadId) && t.status !== "done" && t.status !== "canceled");
+      return mine.length ? mine.map((t) => `${t.key} [${t.status}] ${t.title}`).join("\n") : "No open to-do items linked to this chat.";
+    },
+  });
+
   bb.rpc.register(rpcContract, {
+    todo_list: async () => {
+      try {
+        return { items: await todo.list(), available: true };
+      } catch (e) {
+        bb.log.warn(`todo list: ${String(e)}`);
+        return { items: [], available: false };
+      }
+    },
+    todo_add: async (input) => ({ keys: await todo.add(input) }),
+    todo_status: async ({ taskId, status }) => (await todo.setStatus(taskId, status), ok),
+    todo_move: async ({ taskId, status, beforeTaskId, afterTaskId }) => (await todo.move(taskId, status, beforeTaskId, afterTaskId), ok),
+    todo_rename: async ({ taskId, title }) => (await todo.rename(taskId, title), ok),
+    todo_delete: async ({ taskId }) => (await todo.remove(taskId), ok),
+    todo_link_thread: async ({ taskId, threadId, on }) => (await todo.linkThread(taskId, threadId, on), ok),
+    todo_link_folder: async ({ taskId, folderId }) => (await todo.linkFolder(taskId, folderId), ok),
     state_get: () => read(),
     tag_create: async ({ name, color }) => {
       const tag = { id: `t_${randomUUID().slice(0, 8)}`, name, color };

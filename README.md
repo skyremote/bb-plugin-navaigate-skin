@@ -1,4 +1,6 @@
-# NavAIgate Skin for bb
+# NavAIgate Workspace for bb
+
+*(Installed as `navaigate-skin`; the id is kept so existing installs, tags and settings carry over.)*
 
 The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gold for "now", no blue, in light and dark. It turns bb's sidebar into a run sheet you can organise, puts a live usage dock under the chat box, and lets agents draw real charts inside their replies.
 
@@ -13,18 +15,27 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 - **Multi-select**: ⌘-click to toggle, ⇧-click for a range, or press **Select** for checkboxes. The bulk bar flags, tags, pins, archives or deletes in one go. Esc clears.
 - Right-click on everything: chats, folders, project headings, tags.
 
+**To-do, linked to where the work is**
+- Say it in any chat: "we've got this, this and this to do". The agent's `workspace_todo` tool records one item per thing, linked to that chat.
+- Open the **To-do panel** on the right from the header button or **⌘⇧D**. Scopes: *This chat*, *this folder* (or project), *Everything*. Paste a list to add several at once; click the mark to tick an item off; right-click to move, link to this chat or folder, rename or delete.
+- Folders in the rail show how many items are open inside them.
+- The **Board** (sidebar, *Board*) has four columns, *To do*, *Doing*, *Check*, *Done*, and moves on real signals rather than agents' self-reports: a linked chat that starts working moves its item to *Doing*; when every linked chat has finished it goes to *Check*. Nothing is ever moved to *Done* for you. Drag cards to override.
+- Storage is bb's own **Tasks** plugin, so `bb tasks` and agents keep working. Each bb project gets a tracker project (for example `NAV`) the first time you add an item.
+
 **Control room** on the new-thread screen: running, needs you, unread and parked across every harness, with a split bar per harness.
 
 **Usage dock** under the chat box (replaces bb's context ring): a comet-dial context gauge with the auto-compact point, plus the plan windows of the subscription this chat actually runs on. With bb's Account Pooler it follows the pooled account; otherwise it reads the local login.
 
 **`::nav-chart`** directive for replies: `bars`, `stats`, `split` and `steps`. The bundled `navaigate-charts` skill tells agents how to use it.
 
+**Light/dark toggle** in the sidebar footer.
+
 **Theme**: the NavAIgate palette, IBM Plex type, a slightly looser spacing grid, warm terminal colours, a jelly-style reasoning picker, a voice pill on the mic and springy presses.
 
 ## Install
 
 ```sh
-bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.4.0
+bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.5.0
 bb theme set plugin:navaigate-skin:navaigate
 bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'
 ```
@@ -51,7 +62,7 @@ bb plugin dev              # rebuild and reload on save
 npx tsc --noEmit -p .      # typecheck
 ```
 
-Layout: `app.tsx` registers the surfaces; `src/rail.tsx` (sidebar), `src/control-room.tsx`, `src/usage-dock.tsx`, `src/chart.tsx`, `src/tags.tsx`, `src/bulk-bar.tsx`, `src/status-mark.tsx`; `server.ts` holds the synced rail state and the read-only Account Pooler lookup; `themes/navaigate.css` is the palette and micro-interactions.
+Layout: `app.tsx` registers the surfaces; `src/rail.tsx` (sidebar), `src/control-room.tsx`, `src/usage-dock.tsx`, `src/chart.tsx`, `src/tags.tsx`, `src/bulk-bar.tsx`, `src/status-mark.tsx`; `server.ts` holds the synced rail state, the to-do RPCs, the `workspace_todo` agent tool and the read-only Account Pooler lookup; `server-todo.ts` is the to-do engine on bb Tasks; `src/todo.tsx` the panel and Board; `themes/navaigate.css` is the palette and micro-interactions.
 
 ## Credits
 

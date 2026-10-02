@@ -185,7 +185,7 @@ function comet(pct: number, marker: number | null): string {
 
 const cap = (s: string) => `<span class="text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">${esc(s)}</span>`;
 
-function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null): string {
+function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null, width = 800): string {
   const parts: string[] = [];
   if (ctx && ctx.used !== null && ctx.window) {
     const pct = (ctx.used / ctx.window) * 100;
@@ -195,7 +195,7 @@ function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null
     parts.push(
       `<span class="flex items-center gap-2" title="${esc(title)}">${cap("Context")}${comet(pct, compactPct)}` +
         `<span class="text-foreground">${k(ctx.used)}</span><span>/ ${k(ctx.window)} · ${Math.round(pct)}%</span>` +
-        (left !== null ? `<span class="hidden text-muted-foreground/80 xl:inline">· ${k(left)} to compact</span>` : "") +
+        (left !== null && width >= 860 ? `<span class="text-muted-foreground/80">· ${k(left)} to compact</span>` : "") +
         `</span>`,
     );
   } else if (ctx && ctx.used !== null) {
@@ -207,7 +207,7 @@ function render(ctx: Ctx, harness: string, wins: Win[] | null, plan: Plan | null
   }
   if (wins && wins.length > 0) {
     parts.push(`<span aria-hidden class="h-3 w-px bg-border"></span>`);
-    if (plan && (plan.label || plan.email)) {
+    if (plan && (plan.label || plan.email) && width >= 660) {
       const who = plan.email ?? "";
       const how = plan.source === "pinned" ? "this chat is pinned to" : plan.source === "pool" ? "the pool's current account" : "local login";
       parts.push(
@@ -368,7 +368,7 @@ export function UsageDock() {
 
   useEffect(() => {
     if (!slot) return;
-    slot.innerHTML = threadId ? render(ctx, providerId ? harnessOf(providerId).label : "", wins, plan) : "";
+    slot.innerHTML = threadId ? render(ctx, providerId ? harnessOf(providerId).label : "", wins, plan, slot.clientWidth || 800) : "";
   }, [slot, ctx, wins, plan, threadId, providerId]);
 
   return null;
