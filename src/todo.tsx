@@ -329,8 +329,8 @@ export function TodoPanel({ threadId }: { threadId: string }) {
   const label: Record<Column, string> = { doing: "Doing", check: "Check", todo: "To do", done: "Done" };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-1 border-b border-border px-3 py-2">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden">
+      <div className="flex min-w-0 items-center gap-1 border-b border-border px-3 py-2">
         {(
           [
             ["chat", "This chat"],

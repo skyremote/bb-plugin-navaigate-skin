@@ -11,7 +11,7 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 - Harness filter (All, Claude, Codex, Cursor and anything else you run) and your own **tags** beside it. Click a tag to filter, right-click to rename, recolour or delete, `+ Tag` to make one.
 - **Come back later**: flag any chat as *revisit*, *done, check it* or *has a mistake*. Flagged chats move to their own section with an animated status mark so they cannot be missed.
 - **Folders**: real folders on disk under each project (via the [project-folders](https://github.com/VKirill/bb-plugin-project-folders) plugin). Make new ones, add existing ones from the drive, drag chats in, drag folders into folders.
-- **Sections you arrange**: click a heading to fold it, drag a heading to reorder. Order and folds sync across machines.
+- **Sections you arrange**: click a heading to fold it, drag a heading to reorder. Order and folds are kept on your bb server, so every window shows the same layout.
 - **Multi-select**: ⌘-click to toggle, ⇧-click for a range, or press **Select** for checkboxes. The bulk bar flags, tags, pins, archives or deletes in one go. Esc clears.
 - Right-click on everything: chats, folders, project headings, tags.
 
@@ -35,7 +35,7 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 ## Install
 
 ```sh
-bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.5.0
+bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.6.0
 bb theme set plugin:navaigate-skin:navaigate
 bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'
 ```

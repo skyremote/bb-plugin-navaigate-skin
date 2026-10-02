@@ -1,6 +1,6 @@
 {
   "name": "bb-plugin-navaigate-skin",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "engines": {
     "bb": ">=0.44",
@@ -8,7 +8,7 @@
   },
   "bb": {
     "name": "NavAIgate Workspace",
-    "description": "NavAIgate Workspace for bb: run-sheet sidebar with tags, later flags, folders and multi-select; a to-do list linked to chats and folders with a self-moving Board; Control room; usage dock; charts in replies; the NavAIgate theme.",
+    "description": "Turn bb's sidebar into a run sheet: see what every harness is working on, tag and flag chats, and track to-dos that move on their own.",
     "branding": {
       "icon": "./icons/workspace.svg",
       "experimental_icons": {
@@ -66,7 +66,7 @@
     "tailwind-merge": "^3.4.0",
     "vaul": "^1.1.2"
   },
-  "description": "NavAIgate Workspace for bb: run-sheet sidebar with tags, later flags, folders and multi-select; a to-do list linked to chats and folders with a self-moving Board; Control room; usage dock; charts in replies; the NavAIgate theme.",
+  "description": "Turn bb's sidebar into a run sheet: see what every harness is working on, tag and flag chats, and track to-dos that move on their own.",
   "repository": {
     "type": "git",
     "url": "https://github.com/skyremote/bb-plugin-navaigate-skin.git"
