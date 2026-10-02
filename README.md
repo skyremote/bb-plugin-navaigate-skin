@@ -2,6 +2,8 @@
 
 *(Installed as `navaigate-skin`; the id is kept so existing installs, tags and settings carry over.)*
 
+**Guide and trailer:** https://skyremote.github.io/bb-plugin-navaigate-skin/
+
 The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gold for "now", no blue, in light and dark. It turns bb's sidebar into a run sheet you can organise, puts a live usage dock under the chat box, and lets agents draw real charts inside their replies.
 
 ## What you get
