@@ -24,6 +24,8 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 - The **Board** (sidebar, *Board*) has four columns, *To do*, *Doing*, *Check*, *Done*, and moves on real signals rather than agents' self-reports: a linked chat that starts working moves its item to *Doing*; when every linked chat has finished it goes to *Check*. Nothing is ever moved to *Done* for you. Drag cards to override.
 - Storage is bb's own **Tasks** plugin, so `bb tasks` and agents keep working. Each bb project gets a tracker project (for example `NAV`) the first time you add an item.
 
+**Voice agent (Savvy)**: press **Talk** in a chat header (or ⌘⇧E) and speak. Savvy, an ElevenLabs agent on Eleven v4 Turbo, turns what you say into a clear prompt and sends it to the harness in the open chat, reads its status or last reply when you ask, stops it, or adds to-dos. When a harness finishes, Savvy tells you in a few sentences what was done, what's left and whether it needs you. The Voice tab on the right keeps the transcript. Needs an ElevenLabs API key (plugin setting, or `~/.elevenlabs/api_key`); the key stays on the bb server, which creates the agent once and hands the window short-lived session tokens. ElevenLabs bills the conversation minutes and the small model inside the agent (Gemini 2.5 Flash by default) to your ElevenLabs account; the real work stays in your harness.
+
 **Control room** on the new-thread screen: running, needs you, unread and parked across every harness, with a split bar per harness.
 
 **Usage dock** under the chat box (replaces bb's context ring): a comet-dial context gauge with the auto-compact point, plus the plan windows of the subscription this chat actually runs on. With bb's Account Pooler it follows the pooled account; otherwise it reads the local login.
@@ -37,7 +39,7 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 ## Install
 
 ```sh
-bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.6.0
+bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.7.0
 bb theme set plugin:navaigate-skin:navaigate
 bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'
 ```

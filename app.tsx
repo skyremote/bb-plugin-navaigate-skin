@@ -14,6 +14,7 @@ import { NavChart } from "./src/chart";
 import { UsageDock } from "./src/usage-dock";
 import { toggleMode } from "./src/mode-toggle";
 import { TodoBoard, TodoHeaderButton, TodoPanel } from "./src/todo";
+import { VoiceEngine, VoiceHeaderButton, VoicePanel, voice } from "./src/voice";
 
 export default definePluginApp((app) => {
   app.slots.experimental_threadList({
@@ -43,6 +44,20 @@ export default definePluginApp((app) => {
       if (ctx.threadId && ctx.openPanel({ actionId: "todo", title: "To-do" })) return;
       window.history.pushState({}, "", "/plugins/navaigate-skin/board");
       window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+    },
+  });
+  // Voice agent (Savvy on ElevenLabs): one engine for the whole window, a Talk
+  // button in each chat header, a Voice tab with the transcript, and ⌘⇧E.
+  app.slots.experimental_appOverlay({ id: "voice-engine", component: VoiceEngine });
+  app.slots.threadPanelAction({ id: "voice", title: "Voice", icon: "Mic", layout: "flush", component: () => <VoicePanel /> });
+  app.slots.experimental_threadHeaderAction({ id: "voice-button", title: "Talk to Savvy", component: () => <VoiceHeaderButton /> });
+  app.commands.register({
+    id: "voice-toggle",
+    title: "Workspace: talk to Savvy",
+    defaultShortcut: { key: "e", mod: true, shift: true },
+    run: (ctx) => {
+      if (ctx.threadId) ctx.openPanel({ actionId: "voice", title: "Voice" });
+      voice.toggle();
     },
   });
   app.experimental_sidebarFooter.register({

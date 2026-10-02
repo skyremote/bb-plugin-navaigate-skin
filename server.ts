@@ -14,6 +14,7 @@ import Database from "better-sqlite3";
 import { defineRpcContract, type BbPluginApi } from "@get-bb/plugin-sdk";
 import { z } from "zod";
 import { createTodoEngine, todoItemSchema, TODO_STATUSES } from "./server-todo";
+import { createVoice } from "./server-voice";
 
 // ---- Rail state: tags, "come back later" marks, section order (synced via bb) ----
 
@@ -61,6 +62,8 @@ export const rpcContract = defineRpcContract({
   todo_delete: { input: z.object({ taskId: z.string() }), output: z.object({ ok: z.boolean() }) },
   todo_link_thread: { input: z.object({ taskId: z.string(), threadId: z.string(), on: z.boolean() }), output: z.object({ ok: z.boolean() }) },
   todo_link_folder: { input: z.object({ taskId: z.string(), folderId: z.string().nullable() }), output: z.object({ ok: z.boolean() }) },
+  voice_status: { input: z.null(), output: z.object({ configured: z.boolean(), agentId: z.string().nullable() }) },
+  voice_token: { input: z.null(), output: z.object({ token: z.string(), agentId: z.string() }) },
   pool_account: {
     input: z.object({ provider: z.enum(["claude", "codex"]), sessionId: z.string().max(200).nullable() }),
     output: z.object({ accountId: z.string().nullable(), activeAccountId: z.string().nullable() }),
@@ -114,6 +117,7 @@ export default async function plugin(bb: BbPluginApi) {
   };
 
   const todo = createTodoEngine(bb);
+  const voice = createVoice(bb);
   const ok = { ok: true };
 
   // Real-signal pass every 20s: chats starting or finishing move their tasks.
@@ -164,6 +168,8 @@ export default async function plugin(bb: BbPluginApi) {
   });
 
   bb.rpc.register(rpcContract, {
+    voice_status: () => voice.status(),
+    voice_token: () => voice.token(),
     todo_list: async () => {
       try {
         return { items: await todo.list(), available: true };

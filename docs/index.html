@@ -135,7 +135,7 @@
       <div class="caps">Step one</div>
       <h2>Install it in <em class="f">two</em> commands</h2>
       <p>You need bb 0.44 or later, and then it's two lines in a terminal, and the second one switches on the NavAIgate theme, which you can change back any time in Settings, Appearance.</p>
-<pre>bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.6.0
+<pre>bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.7.0
 bb theme set plugin:navaigate-skin:navaigate</pre>
       <p>If bb doesn't switch to the new sidebar on its own, pick <b>NavAIgate rail</b> in Settings, Appearance, Sidebar, or run this:</p>
 <pre>bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'</pre>
@@ -254,6 +254,19 @@ bb theme set plugin:navaigate-skin:navaigate</pre>
     </div>
   </section>
 
+  <section class="block" id="voice">
+    <div class="wrap">
+      <div class="caps">Voice</div>
+      <h2>Talk to it, and hear what <em class="f">happened</em></h2>
+      <p>Press <b>Talk</b> in the chat header, or <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>E</kbd>, and just say what you want done, and Savvy, a voice agent on ElevenLabs, writes it up as a clear prompt and sends it to whichever harness is in that chat. When the harness finishes, she tells you in a couple of sentences what was done, what's left and whether it needs you, and the Voice tab on the right keeps the whole transcript.</p>
+      <ul class="points">
+        <li>Ask "what's it doing?" or "what did it say?" and she checks the chat for you.</li>
+        <li>Say "stop it" and she stops the harness, or list things to do and she adds them to the to-do list.</li>
+        <li>It needs an ElevenLabs API key in the plugin settings. The key stays on your bb server, and ElevenLabs bills the conversation to your account.</li>
+      </ul>
+    </div>
+  </section>
+
   <section class="block" id="charts">
     <div class="wrap">
       <div class="caps">Charts in replies</div>
@@ -273,6 +286,7 @@ bb theme set plugin:navaigate-skin:navaigate</pre>
         <div class="key"><b><kbd>⌘</kbd> + click</b><span>Select or deselect one chat.</span></div>
         <div class="key"><b><kbd>⇧</kbd> + click</b><span>Select a run of chats.</span></div>
         <div class="key"><b><kbd>Esc</kbd></b><span>Clear the selection.</span></div>
+        <div class="key"><b><kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>E</kbd></b><span>Start or end a voice session with Savvy.</span></div>
         <div class="key"><b>Right-click</b><span>The menu for any chat, folder, project heading or tag.</span></div>
         <div class="key"><b>Half-moon button</b><span>Bottom of the sidebar, next to Settings. Switches light and dark.</span></div>
         <div class="key"><b>Board</b><span>In the sidebar navigation, under Search threads once you drag it up.</span></div>
