@@ -267,6 +267,22 @@ bb theme set plugin:navaigate-skin:navaigate</pre>
     </div>
   </section>
 
+  <section class="block" id="agents">
+    <div class="wrap">
+      <div class="caps">Agents</div>
+      <h2>See the whole run, and start an agent when you <em class="f">want</em> one</h2>
+      <p>Open <b>Agents</b> on the right of any chat, or press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd>, and <b>This run</b> shows the chat and every sub-agent under it as a tree, live, with which harness each one is on, whether it's working or needs you, and a session log of every change while the panel is open. <b>Your agents</b> lists every agent you've defined in <code>~/.claude/agents</code>, with its model and what it's for.</p>
+      <ul class="points">
+        <li>Pick a role (Explorer, Worker, Reviewer, Researcher) or one of your own agents, choose the harness and model with bb's own picker, write the task and press <b>Spin up</b>.</li>
+        <li>It starts as a child of the chat you're in, in the same workspace, and appears in the tree and in the rail straight away.</li>
+        <li>Click any card in the tree to jump into that agent's chat.</li>
+      </ul>
+      <div class="shots" style="max-width:560px;margin-top:22px">
+        <figure class="shot"><a href="img/agents-panel-dark.png"><img src="img/agents-panel-dark.png" alt="The Agents panel with the lead chat, one sub-agent working, the session log and the Spin up form" loading="lazy" width="640" height="952"></a><figcaption>The Agents panel with one sub-agent running.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="charts">
     <div class="wrap">
       <div class="caps">Charts in replies</div>
@@ -274,6 +290,12 @@ bb theme set plugin:navaigate-skin:navaigate</pre>
       <p>Agents can draw a real chart in a reply instead of a list of numbers, and the plugin teaches them how. If you want to write one yourself, it's one line:</p>
 <pre>::nav-chart{kind="bars" title="Threads by harness" data="Claude:26,Codex:9,Cursor:4" highlight="Claude"}</pre>
       <p>The kinds are <code>bars</code>, <code>stats</code>, <code>split</code> and <code>steps</code>, and <code>note</code> adds a source line underneath.</p>
+      <p>Two more work the same way. <code>::nav-links</code> turns a list of links into cards in each platform's own colour, so LinkedIn is blue, YouTube is red and X and Threads are black, and <code>::nav-pipeline</code> draws an agent stack, who plans, who runs side by side, who reviews and who watches, with a session log underneath.</p>
+<pre>::nav-links{title="Posted" items="https://www.linkedin.com/... https://x.com/... https://youtube.com/..."}
+::nav-pipeline{layers="Opus|plans|orange ; Worker|edits|blue , Explorer|reads|blue ; Opus|reviews|orange" side="Fable|advisor|plum"}</pre>
+      <div class="shots" style="max-width:560px;margin-top:22px">
+        <figure class="shot"><a href="img/mods-dark.png"><img src="img/mods-dark.png" alt="Link cards for LinkedIn, X, Threads, YouTube and GitHub above an agent stack diagram with a session log" loading="lazy" width="730" height="650"></a><figcaption>Link cards and an agent stack, drawn inside a reply.</figcaption></figure>
+      </div>
     </div>
   </section>
 
@@ -287,6 +309,7 @@ bb theme set plugin:navaigate-skin:navaigate</pre>
         <div class="key"><b><kbd>⇧</kbd> + click</b><span>Select a run of chats.</span></div>
         <div class="key"><b><kbd>Esc</kbd></b><span>Clear the selection.</span></div>
         <div class="key"><b><kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>E</kbd></b><span>Start or end a voice session with Savvy.</span></div>
+        <div class="key"><b><kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd></b><span>Open the Agents panel: the live run, your agents and Spin up.</span></div>
         <div class="key"><b>Right-click</b><span>The menu for any chat, folder, project heading or tag.</span></div>
         <div class="key"><b>Half-moon button</b><span>Bottom of the sidebar, next to Settings. Switches light and dark.</span></div>
         <div class="key"><b>Board</b><span>In the sidebar navigation, under Search threads once you drag it up.</span></div>

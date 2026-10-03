@@ -12,6 +12,8 @@ import { Rail } from "./src/rail";
 import { ControlRoom } from "./src/control-room";
 import { NavChart } from "./src/chart";
 import { UsageDock } from "./src/usage-dock";
+import { NavLinks, NavPipeline } from "./src/directives";
+import { AgentsPanel } from "./src/agents";
 import { toggleMode } from "./src/mode-toggle";
 import { TodoBoard, TodoHeaderButton, TodoPanel } from "./src/todo";
 import { VoiceEngine, VoiceHeaderButton, VoicePanel, voice } from "./src/voice";
@@ -25,7 +27,25 @@ export default definePluginApp((app) => {
   });
   app.slots.homepageSection({ id: "control-room", title: "Control room", component: ControlRoom });
   app.slots.messageDirective({ id: "nav-chart", component: NavChart });
+  app.slots.messageDirective({ id: "nav-links", component: NavLinks });
+  app.slots.messageDirective({ id: "nav-pipeline", component: NavPipeline });
   app.slots.experimental_appOverlay({ id: "usage-dock", component: UsageDock });
+  // Agents: the orchestration space on the right — family map, log, spin up.
+  app.slots.threadPanelAction({
+    id: "agents",
+    title: "Agents",
+    icon: "navaigate-skin/agents",
+    layout: "flush",
+    component: ({ threadId }) => <AgentsPanel threadId={threadId} />,
+  });
+  app.commands.register({
+    id: "open-agents",
+    title: "Workspace: open agents",
+    defaultShortcut: { key: "a", mod: true, shift: true },
+    run: (ctx) => {
+      if (ctx.threadId) ctx.openPanel({ actionId: "agents", title: "Agents" });
+    },
+  });
   // To-do: right-hand panel in any chat, a Board page, a header button and ⌘⇧D.
   app.slots.threadPanelAction({
     id: "todo",

@@ -57,6 +57,19 @@ To go back to bb's own sidebar: Settings, Appearance, Sidebar.
 ::nav-chart{kind="steps" title="Rollout" data="Theme:done,Rail:done,Dock:now,Publish:next"}
 ```
 
+## Links and agent pipelines in replies
+
+Two more renderers sit next to `::nav-chart`:
+
+- `::nav-links{items="https://... https://..."}` turns a list of URLs into cards in each platform's own colour (LinkedIn blue, YouTube red, X and Threads black, GitHub, and more).
+- `::nav-pipeline{layers="Lead|plans|orange ; Worker|edits|blue , Explorer|reads|blue" side="Advisor|watches|plum" log="23:51 Worker|tests failed"}` draws an agent stack with connectors and a session log.
+
+The bundled `navaigate-charts` skill teaches agents all three.
+
+## Agents panel (⌘⇧A)
+
+A right-hand panel in every chat. **This run** maps the chat and every sub-agent under it, live, with a session log of status changes. **Your agents** lists every agent defined in `~/.claude/agents` (name, model, description). Pick a role preset or one of your agents, choose the harness and model with bb's own picker, write the task, and **Spin up** starts it as a child of the chat in the same workspace.
+
 ## Develop
 
 ```sh

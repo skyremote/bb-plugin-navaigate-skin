@@ -62,6 +62,12 @@ export const rpcContract = defineRpcContract({
   todo_delete: { input: z.object({ taskId: z.string() }), output: z.object({ ok: z.boolean() }) },
   todo_link_thread: { input: z.object({ taskId: z.string(), threadId: z.string(), on: z.boolean() }), output: z.object({ ok: z.boolean() }) },
   todo_link_folder: { input: z.object({ taskId: z.string(), folderId: z.string().nullable() }), output: z.object({ ok: z.boolean() }) },
+  agents_list: {
+    input: z.null(),
+    output: z.object({
+      agents: z.array(z.object({ name: z.string(), description: z.string(), model: z.string().nullable(), color: z.string().nullable(), file: z.string() })),
+    }),
+  },
   voice_status: { input: z.null(), output: z.object({ configured: z.boolean(), agentId: z.string().nullable() }) },
   voice_token: { input: z.null(), output: z.object({ token: z.string(), agentId: z.string() }) },
   pool_account: {
@@ -168,6 +174,7 @@ export default async function plugin(bb: BbPluginApi) {
   });
 
   bb.rpc.register(rpcContract, {
+    agents_list: () => ({ agents: listAgents() }),
     voice_status: () => voice.status(),
     voice_token: () => voice.token(),
     todo_list: async () => {
@@ -267,4 +274,33 @@ export default async function plugin(bb: BbPluginApi) {
       }
     },
   });
+}
+
+// Defined agents (Claude Code format: one .md per agent with YAML front matter)
+// from ~/.claude/agents — the fleet the Agents panel can start with one click.
+function listAgents() {
+  const dir = path.join(os.homedir(), ".claude", "agents");
+  let files: string[] = [];
+  try {
+    files = fs.readdirSync(dir).filter((f) => f.endsWith(".md") && f.toLowerCase() !== "readme.md");
+  } catch {
+    return [];
+  }
+  const out: Array<{ name: string; description: string; model: string | null; color: string | null; file: string }> = [];
+  for (const f of files) {
+    try {
+      const text = fs.readFileSync(path.join(dir, f), "utf8").slice(0, 8000);
+      const m = text.match(/^---\n([\s\S]*?)\n---/);
+      if (!m) continue;
+      const field = (k: string) => {
+        const r = m[1].match(new RegExp(`^${k}:\\s*(.*)$`, "m"));
+        return r ? r[1].trim().replace(/^["']|["']$/g, "") : null;
+      };
+      const name = field("name") ?? f.replace(/\.md$/, "");
+      out.push({ name, description: (field("description") ?? "").slice(0, 220), model: field("model"), color: field("color"), file: path.join(dir, f) });
+    } catch {
+      /* unreadable file: skip */
+    }
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
 }
