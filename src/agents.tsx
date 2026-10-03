@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   experimental_ProviderModelPicker as ProviderModelPicker,
   experimental_useSidebarThreads as useSidebarThreads,
+  useBbNavigate,
   useRpc,
   useSdk,
   type ExperimentalProviderModelPickerValue,
@@ -111,7 +112,41 @@ function Branch({ t, kids, current, depth }: { t: PluginSidebarThread; kids: Map
 
 /* ------------------------------ the fleet ---------------------------- */
 
-type FleetAgent = { name: string; description: string; model: string | null; color: string | null; file: string };
+type FleetAgent = { name: string; description: string; model: string | null; color: string | null; group: string | null; file: string };
+
+// The crew, grouped like an org chart. A `group:` line in an agent's front
+// matter wins; otherwise: chief-of-staff / cos-* lead, *-lead are the leads,
+// a shared prefix used by two or more agents (adsk-*) is its own team, and the
+// rest are specialists.
+const GROUP_ORDER = ["Chief of staff", "Leads"];
+function groupFleet(agents: FleetAgent[]) {
+  const prefixCount = new Map<string, number>();
+  for (const a of agents) {
+    const p = a.name.split("-")[0];
+    prefixCount.set(p, (prefixCount.get(p) ?? 0) + 1);
+  }
+  const groups = new Map<string, FleetAgent[]>();
+  for (const a of agents) {
+    const p = a.name.split("-")[0];
+    const g =
+      a.group ??
+      (a.name.startsWith("chief-of-staff") || a.name.startsWith("cos-")
+        ? "Chief of staff"
+        : a.name.endsWith("-lead")
+          ? "Leads"
+          : a.name.includes("-") && (prefixCount.get(p) ?? 0) >= 2 && p.length <= 6
+            ? p.toUpperCase()
+            : "Specialists");
+    const list = groups.get(g) ?? [];
+    list.push(a);
+    groups.set(g, list);
+  }
+  const rank = (g: string) => (GROUP_ORDER.includes(g) ? GROUP_ORDER.indexOf(g) : g === "Specialists" ? 50 : 10);
+  return Array.from(groups.entries()).sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]));
+}
+
+/** Leads and the chief of staff open their own chat by default; specialists work under this one. */
+export const leadsByDefault = (a: FleetAgent) => a.name.startsWith("chief-of-staff") || a.name.startsWith("cos-") || a.name.endsWith("-lead") || a.group === "Chief of staff" || a.group === "Leads";
 let fleetCache: FleetAgent[] | null = null;
 
 function useFleet() {
@@ -146,7 +181,13 @@ function Fleet({ chosen, onChoose }: { chosen: string | null; onChoose: (a: Flee
         placeholder={`Filter ${agents.length} agents`}
         className="mb-2 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-[12px] text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--attention)]"
       />
-      {shown.map((a) => (
+      {groupFleet(shown).map(([group, list]) => (
+        <div key={group} className="mb-2">
+          <div className={cn(caps, "mb-1 mt-2 flex items-center gap-2")}>
+            {group}
+            <span style={tnum}>{list.length}</span>
+          </div>
+      {list.map((a) => (
         <button
           key={a.name}
           type="button"
@@ -167,6 +208,8 @@ function Fleet({ chosen, onChoose }: { chosen: string | null; onChoose: (a: Flee
           <span className="mt-0.5 block overflow-hidden pl-4 text-[11px] leading-snug text-muted-foreground" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{a.description}</span>
         </button>
       ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -181,6 +224,32 @@ function SpinUp({ threadId, root, fleetAgent, clearFleet }: { threadId: string; 
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [pick, setPick] = useState<ExperimentalProviderModelPickerValue>({ providerId: root.providerId, model: "", reasoningLevel: "medium" });
+  const [own, setOwn] = useState(false);
+  const nav = useBbNavigate();
+
+  // Picking a crew member: put it on the model its file pins (opus, sonnet,
+  // fable...) and default leads to their own chat.
+  useEffect(() => {
+    if (!fleetAgent) return;
+    setOwn(leadsByDefault(fleetAgent));
+    const pin = (fleetAgent.model ?? "").toLowerCase();
+    if (!pin || pin === "inherit") return;
+    const providerId = /gpt|codex|o\d/.test(pin) ? "codex" : root.providerId.includes("claude") ? root.providerId : "claude-code";
+    let live = true;
+    sdk.providers
+      .models({ providerId })
+      .then((r) => {
+        if (!live) return;
+        const m = r.models.find((x) => x.model.toLowerCase().includes(pin) || x.displayName.toLowerCase().includes(pin));
+        if (m) setPick({ providerId, model: m.model, reasoningLevel: m.defaultReasoningEffort as ExperimentalProviderModelPickerValue["reasoningLevel"] });
+        else if (providerId !== pick.providerId) setPick({ providerId, model: "", reasoningLevel: "medium" });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fleetAgent?.name]);
 
   useEffect(() => {
     let live = true;
@@ -204,7 +273,7 @@ function SpinUp({ threadId, root, fleetAgent, clearFleet }: { threadId: string; 
       const made = await sdk.threads.spawn({
         projectId: root.projectId,
         environment: envId ? { type: "reuse", environmentId: envId } : { type: "project-default" },
-        parentThreadId: threadId,
+        ...(own ? {} : { parentThreadId: threadId }),
         providerId: pick.providerId,
         ...(pick.model ? { model: pick.model } : {}),
         ...(pick.reasoningLevel ? { reasoningLevel: pick.reasoningLevel } : {}),
@@ -212,7 +281,8 @@ function SpinUp({ threadId, root, fleetAgent, clearFleet }: { threadId: string; 
         visibility: "visible",
         prompt: (r?.brief ?? "") + text,
       } as Parameters<typeof sdk.threads.spawn>[0]);
-      toast.success(`Started ${r?.label ?? "agent"}`, { description: (made as { title?: string | null }).title ?? undefined });
+      toast.success(`Started ${r?.label ?? "agent"}`, { description: own ? "In its own chat" : (made as { title?: string | null }).title ?? undefined });
+      if (own) nav.toThread((made as { id: string }).id);
       setTask("");
       setTitle("");
       clearFleet();
@@ -256,6 +326,19 @@ function SpinUp({ threadId, root, fleetAgent, clearFleet }: { threadId: string; 
           <ProviderModelPicker value={pick} onChange={setPick} routing={envId ? { kind: "environment", environmentId: envId } : undefined} align="start" />
         </Boundary>
       </div>
+      <div className="mb-2 flex items-center gap-1 text-[11.5px]">
+        <span className="mr-1 text-muted-foreground">Runs</span>
+        {([false, true] as const).map((v) => (
+          <button
+            key={String(v)}
+            type="button"
+            onClick={() => setOwn(v)}
+            className={cn("rounded-md border px-2 py-0.5 transition-colors", own === v ? "border-[color:var(--attention)] text-foreground" : "border-border text-muted-foreground hover:text-foreground")}
+          >
+            {v ? "in its own chat" : "under this chat"}
+          </button>
+        ))}
+      </div>
       <textarea
         value={task}
         onChange={(e) => setTask(e.target.value)}
@@ -283,7 +366,7 @@ function SpinUp({ threadId, root, fleetAgent, clearFleet }: { threadId: string; 
           {busy ? "Starting…" : "Spin up ⌘↵"}
         </button>
       </div>
-      <p className="mt-1.5 text-[11px] text-muted-foreground">Runs as a child of this chat, in the same workspace. It shows up in the map above and in the rail.</p>
+      <p className="mt-1.5 text-[11px] text-muted-foreground">{own ? "Opens as its own chat in this project, so it can lead and start sub-agents of its own." : "Runs as a sub-agent of this chat, in the same workspace, and shows up in the map above."}</p>
     </div>
   );
 }

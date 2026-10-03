@@ -39,7 +39,7 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 ## Install
 
 ```sh
-bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.8.1
+bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.8.2
 bb theme set plugin:navaigate-skin:navaigate
 bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'
 ```
@@ -68,7 +68,7 @@ The bundled `navaigate-charts` skill teaches agents all three.
 
 ## Agents panel (⌘⇧A)
 
-A right-hand panel in every chat. **This run** maps the chat and every sub-agent under it, live, with a session log of status changes. **Your agents** lists every agent defined in `~/.claude/agents` (name, model, description). Pick a role preset or one of your agents, choose the harness and model with bb's own picker, write the task, and **Spin up** starts it as a child of the chat in the same workspace.
+A right-hand panel in every chat. **This run** maps the chat and every sub-agent under it, live, with a session log of status changes. **Your agents** lists every agent defined in `~/.claude/agents`, grouped like a crew: chief of staff, leads, teams that share a name prefix, then specialists (a `group:` line in an agent's front matter overrides this). Picking one puts it on the model its file pins, and leads default to running in their own chat so they can start sub-agents of their own. Pick a role preset or one of your agents, choose the harness and model with bb's own picker, write the task, and **Spin up** starts it as a child of the chat in the same workspace.
 
 ## Develop
 

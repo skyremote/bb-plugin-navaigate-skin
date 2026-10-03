@@ -65,7 +65,7 @@ export const rpcContract = defineRpcContract({
   agents_list: {
     input: z.null(),
     output: z.object({
-      agents: z.array(z.object({ name: z.string(), description: z.string(), model: z.string().nullable(), color: z.string().nullable(), file: z.string() })),
+      agents: z.array(z.object({ name: z.string(), description: z.string(), model: z.string().nullable(), color: z.string().nullable(), group: z.string().nullable(), file: z.string() })),
     }),
   },
   voice_status: { input: z.null(), output: z.object({ configured: z.boolean(), agentId: z.string().nullable() }) },
@@ -286,7 +286,7 @@ function listAgents() {
   } catch {
     return [];
   }
-  const out: Array<{ name: string; description: string; model: string | null; color: string | null; file: string }> = [];
+  const out: Array<{ name: string; description: string; model: string | null; color: string | null; group: string | null; file: string }> = [];
   for (const f of files) {
     try {
       const text = fs.readFileSync(path.join(dir, f), "utf8").slice(0, 8000);
@@ -297,7 +297,7 @@ function listAgents() {
         return r ? r[1].trim().replace(/^["']|["']$/g, "") : null;
       };
       const name = field("name") ?? f.replace(/\.md$/, "");
-      out.push({ name, description: (field("description") ?? "").slice(0, 220), model: field("model"), color: field("color"), file: path.join(dir, f) });
+      out.push({ name, description: (field("description") ?? "").slice(0, 220), model: field("model"), color: field("color"), group: field("group"), file: path.join(dir, f) });
     } catch {
       /* unreadable file: skip */
     }

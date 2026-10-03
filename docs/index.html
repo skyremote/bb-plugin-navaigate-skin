@@ -135,7 +135,7 @@
       <div class="caps">Step one</div>
       <h2>Install it in <em class="f">two</em> commands</h2>
       <p>You need bb 0.44 or later, and then it's two lines in a terminal, and the second one switches on the NavAIgate theme, which you can change back any time in Settings, Appearance.</p>
-<pre>bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.8.1
+<pre>bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.8.2
 bb theme set plugin:navaigate-skin:navaigate</pre>
       <p>If bb doesn't switch to the new sidebar on its own, pick <b>NavAIgate rail</b> in Settings, Appearance, Sidebar, or run this:</p>
 <pre>bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'</pre>
@@ -271,7 +271,7 @@ bb theme set plugin:navaigate-skin:navaigate</pre>
     <div class="wrap">
       <div class="caps">Agents</div>
       <h2>See the whole run, and start an agent when you <em class="f">want</em> one</h2>
-      <p>Open <b>Agents</b> on the right of any chat, or press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd>, and <b>This run</b> shows the chat and every sub-agent under it as a tree, live, with which harness each one is on, whether it's working or needs you, and a session log of every change while the panel is open. <b>Your agents</b> lists every agent you've defined in <code>~/.claude/agents</code>, with its model and what it's for.</p>
+      <p>Open <b>Agents</b> on the right of any chat, or press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>A</kbd>, and <b>This run</b> shows the chat and every sub-agent under it as a tree, live, with which harness each one is on, whether it's working or needs you, and a session log of every change while the panel is open. <b>Your agents</b> lists every agent you've defined in <code>~/.claude/agents</code>, grouped like a crew, chief of staff first, then the leads, then the specialists. Pick one and it starts on the model its file pins, and a lead can run in its own chat so it can bring in sub-agents of its own.</p>
       <ul class="points">
         <li>Pick a role (Explorer, Worker, Reviewer, Researcher) or one of your own agents, choose the harness and model with bb's own picker, write the task and press <b>Spin up</b>.</li>
         <li>It starts as a child of the chat you're in, in the same workspace, and appears in the tree and in the rail straight away.</li>
