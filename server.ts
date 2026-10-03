@@ -292,9 +292,18 @@ function listAgents() {
       const text = fs.readFileSync(path.join(dir, f), "utf8").slice(0, 8000);
       const m = text.match(/^---\n([\s\S]*?)\n---/);
       if (!m) continue;
+      const lines = m[1].split("\n");
       const field = (k: string) => {
-        const r = m[1].match(new RegExp(`^${k}:\\s*(.*)$`, "m"));
-        return r ? r[1].trim().replace(/^["']|["']$/g, "") : null;
+        const i = lines.findIndex((l) => l.startsWith(`${k}:`));
+        if (i < 0) return null;
+        const v = lines[i].slice(k.length + 1).trim();
+        // YAML block scalars (description: > or |): join the indented lines below.
+        if (/^[>|][+-]?$/.test(v)) {
+          const body: string[] = [];
+          for (let j = i + 1; j < lines.length && (/^\s/.test(lines[j]) || lines[j] === ""); j++) body.push(lines[j].trim());
+          return body.join(" ").replace(/\s+/g, " ").trim() || null;
+        }
+        return v.replace(/^["']|["']$/g, "") || null;
       };
       const name = field("name") ?? f.replace(/\.md$/, "");
       out.push({ name, description: (field("description") ?? "").slice(0, 220), model: field("model"), color: field("color"), group: field("group"), file: path.join(dir, f) });
