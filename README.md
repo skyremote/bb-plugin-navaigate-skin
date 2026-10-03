@@ -39,7 +39,7 @@ The NavAIgate platform look for [bb](https://getbb.app): warm paper and ink, gol
 ## Install
 
 ```sh
-bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.7.0
+bb plugin install git:https://github.com/skyremote/bb-plugin-navaigate-skin.git@^0.8.0
 bb theme set plugin:navaigate-skin:navaigate
 bb settings ui set sidebar.threadListProvider '"navaigate-skin/rail"'
 ```
