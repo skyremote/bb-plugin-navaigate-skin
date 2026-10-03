@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { rpcContract } from "../server";
+import { Boundary } from "./boundary";
 import { GOLD, Node, ago, caps, harnessOf, stateOf, tnum, type State } from "./shared";
 
 const STATE_LABEL: Record<State, string> = { running: "working", needs: "needs you", unread: "replied", parked: "idle" };
@@ -251,7 +252,9 @@ function SpinUp({ threadId, root, fleetAgent, clearFleet }: { threadId: string; 
         ))}
       </div>
       <div className="mb-2">
-        <ProviderModelPicker value={pick} onChange={setPick} routing={envId ? { kind: "environment", environmentId: envId } : undefined} align="start" />
+        <Boundary label="Model picker" compact>
+          <ProviderModelPicker value={pick} onChange={setPick} routing={envId ? { kind: "environment", environmentId: envId } : undefined} align="start" />
+        </Boundary>
       </div>
       <textarea
         value={task}
